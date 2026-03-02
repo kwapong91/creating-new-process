@@ -2,37 +2,40 @@ import sys
 import os
 import subprocess
 
+mini_linux_link = 'https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/armv7/alpine-minirootfs-3.23.3-armv7.tar.gz'
+
+
 # 1. Fork the parent process
 pid = os.fork()
 jail = 'linux_jail_root'
 
 # 2. Exec into the new process
 if pid == 0:
-    print(os.getpid())
-    listing = os.execv("/bin/echo", ['echo', 'Hello World'])
-    print(listing)
+    subprocess.run(['sudo', 'mkdir', jail], check=True, cwd='/tmp/')
+
+    def download_item(link):
+        try:
+            subprocess.run(['wget', mini_linux_link], cwd=f'/tmp/{jail}/')
+        except subprocess.CalledProcessError as e:
+            print("wget failed")
+            print(f"Exit code: {e.returncode}")
+        except subprocess.SubprocessError:
+            print("wget is not installed or path is not found")
+        except subprocess.TimeoutExpired:
+            print('wget timed out. Trying againing')
+
+    download_item(mini_linux_link)
 else:
     os.wait()
 
 # Creating jail directory and switching to it:
-subprocess.run(['sudo', 'mkdir', jail], check=True)
-subprocess.run(['cd', jail])
+
     
 
 # 3. Grab mini linux from web
 
-mini_linux_link = 'https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/armv7/alpine-minirootfs-3.23.3-armv7.tar.gz'
 
-def download_item(link):
-    try:
-        subprocess.run(['wget', link])
-    except subprocess.CalledProcessError as e:
-        print("wget failed")
-        print(f"Exit code: {e.returncode}")
-    except subprocess.SubprocessError:
-        print("wget is not installed or path is not found")
-    except subprocess.TimeoutExpired:
-        print('wget timed out. Trying againing')
+
 
         
         
