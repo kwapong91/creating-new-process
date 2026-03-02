@@ -15,7 +15,7 @@ if pid == 0:
 
     def download_item(link):
         try:
-            subprocess.run(['wget', mini_linux_link], cwd=f'/tmp/{jail}/')
+            subprocess.run(['sudo', 'wget', mini_linux_link], check=True,cwd=f'/tmp/{jail}/')
         except subprocess.CalledProcessError as e:
             print("wget failed")
             print(f"Exit code: {e.returncode}")
