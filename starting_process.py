@@ -1,56 +1,52 @@
-import sys
 import os
 import subprocess
 
-mini_linux_link = 'https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/armv7/alpine-minirootfs-3.23.3-armv7.tar.gz'
+url = 'https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/armv7/alpine-minirootfs-3.23.3-armv7.tar.gz'
 
+def run(cmd, cwd=None):
+    subprocess.run(cmd, check=True, cwd=cwd)
 
-# 1. Fork the parent process
-pid = os.fork()
-jail = 'linux_jail_root'
+def download(url, jail_path):
+    filename = url.split('/')[-1]
+    path = os.path.join(jail_path, filename)
 
-# 2. Exec into the new process
-if pid == 0:
-    os.makedirs(f'/tmp/{jail}', exist_ok=True)
-
-    def download_item(link):
-        try:
-            subprocess.run(['wget', mini_linux_link], check=True, cwd=f'/tmp/{jail}/')
-        except subprocess.CalledProcessError as e:
-            print("wget failed")
-            print(f"Exit code: {e.returncode}")
-        except subprocess.SubprocessError:
-            print("wget is not installed or path is not found")
-        except subprocess.TimeoutExpired:
-            print('wget timed out. Trying againing')
-
-    download_item(mini_linux_link)
-
-    subprocess.run(['tar', '-xzf', 'alpine-minirootfs-3.23.3-armv7.tar.gz'], check=True, cwd=f'/tmp/{jail}/')
-else:
-    os.wait()
-
-
-
+    if os.path.exists(path):
+        return filename
     
+    run(['wget', url], cwd=jail_path)
+    return filename
+
+def extract(archive_name, jail_path):
+    if os.path.exists(os.path.join(jail_path, 'bin')):
+        return
+    
+    run(['tar', '-xzf', archive_name], cwd=jail_path)
+
+def child(jail_path):
+    os.makedirs(jail_path, exist_ok=True)
+    
+    archive = download(url, jail_path)
+    extract(archive, jail_path)
+
+    os.chroot(jail_path)
+    os.chdir('/')
+
+    os.execvp("/bin/sh", ["/bin/sh"])
+
+def main():
+    jail_path = "/tmp/linux_jail_root"
+
+    pid = os.fork()
+    if pid == 0:
+        child(jail_path)
+    else:
+        os.wait()
+
+
+if __name__ == "__main__":
+    main()
 
 
 
 
-
-
-        
-        
-
-        
-
-# 4. Create jail directory:
-#   - mkdir jail file and switch to it
-#   - decompress mini linux inside file
-
-
-
-
-
-
-
+   
