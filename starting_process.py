@@ -25,14 +25,16 @@ if pid == 0:
             print('wget timed out. Trying againing')
 
     download_item(mini_linux_link)
+
+    subprocess.run(['tar', '-xzf', 'alpine-minirootfs-3.23.3-armv7.tar.gz'], check=True, cwd=f'/tmp/{jail}/')
 else:
     os.wait()
 
-# Creating jail directory and switching to it:
+
 
     
 
-# 3. Grab mini linux from web
+
 
 
 
