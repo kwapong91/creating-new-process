@@ -15,7 +15,7 @@ else:
     os.wait()
 
 # Creating jail directory and switching to it:
-os.mkdir(jail)
+subprocess.run(['sudo', 'mkdir', jail], check=True)
 subprocess.run(['cd', jail])
     
 
