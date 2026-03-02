@@ -11,11 +11,11 @@ jail = 'linux_jail_root'
 
 # 2. Exec into the new process
 if pid == 0:
-    subprocess.run(['sudo', 'mkdir', jail], check=True, cwd='/tmp/')
+    os.makedirs(f'/tmp/{jail}', exist_ok=True)
 
     def download_item(link):
         try:
-            subprocess.run(['sudo', 'wget', mini_linux_link], check=True,cwd=f'/tmp/{jail}/')
+            subprocess.run(['wget', mini_linux_link], check=True, cwd=f'/tmp/{jail}/')
         except subprocess.CalledProcessError as e:
             print("wget failed")
             print(f"Exit code: {e.returncode}")
